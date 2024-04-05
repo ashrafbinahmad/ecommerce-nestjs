@@ -1,11 +1,6 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
+  previewFeatures = ["fullTextSearch", "fullTextIndex"]
 }
 
 datasource db {
@@ -13,12 +8,114 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model User {
+model Admin {
   id        Int      @id @default(autoincrement())
+  username  String   @unique
+  hash      String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
 
-  email    String @unique
-  hash     String
-  hashedRt String?
+model Customer {
+  id         Int         @id @default(autoincrement())
+  email      String      @unique
+  hash       String
+  fullname   String
+  reviews    Review[]
+  cart_items Cart_item[]
+  orders     Order[]
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
+}
+
+model Seller {
+  id           Int       @id @default(autoincrement())
+  email        String    @unique
+  company_name String    @unique
+  products     Product[]
+  hash         String
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+}
+
+model Product {
+  id                     Int                   @id @default(autoincrement())
+  name                   String
+  color                  String?
+  material               String?
+  weight_grams           Int?
+  price_rupee            Int
+  offer_price_rupee      Int?
+  thumb_image_url        String
+  image_1_url            String?
+  image_2_url            String?
+  image_3_url            String?
+  stock                  Int
+  brand                  Brand?                @relation(fields: [brandId], references: [id])
+  brandId                Int?
+  product_category       Product_category?     @relation(fields: [product_categoryId], references: [id])
+  product_categoryId     Int?
+  reviews                Review[]
+  cart_items             Cart_item[]
+  orders                 Order[]
+  createdAt              DateTime              @default(now())
+  updatedAt              DateTime              @updatedAt
+  Seller                 Seller?               @relation(fields: [sellerId], references: [id])
+  sellerId               Int?
+}
+
+model Brand {
+  id        Int       @id @default(autoincrement())
+  name      String
+  logo_url  String?
+  products  Product[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}
+
+model Product_category {
+  id                     Int                    @id @default(autoincrement())
+  name                   String
+  icon_url               String?
+  createdAt              DateTime               @default(now())
+  updatedAt              DateTime               @updatedAt
+  products               Product[]
+}
+
+model Review {
+  id         Int      @id @default(autoincrement())
+  customer   Customer @relation(fields: [customerId], references: [id])
+  customerId Int
+  product    Product  @relation(fields: [productId], references: [id])
+  productId  Int
+  comment    String?
+  stars      Int?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+model Cart_item {
+  id         Int      @id @default(autoincrement())
+  customer   Customer @relation(fields: [customerId], references: [id])
+  customerId Int
+  product    Product  @relation(fields: [productId], references: [id])
+  productId  Int
+  quantity   Int      @default(1)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  status     String   @default("ADDED")
+}
+
+model Order {
+  id         Int       @id @default(autoincrement())
+  customer   Customer? @relation(fields: [customerId], references: [id])
+  customerId Int
+  product    Product?  @relation(fields: [productId], references: [id])
+  productId  Int
+  quantity   Int       @default(1)
+  address    String
+  status     String    @default("PLACED")
+  location   String
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
 }

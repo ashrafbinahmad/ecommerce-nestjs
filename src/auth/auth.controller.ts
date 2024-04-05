@@ -1,46 +1,27 @@
-import { Controller, Post, Body, Req, Get, UseGuards } from '@nestjs/common';
+/*
+https://docs.nestjs.com/controllers#controllers
+*/
+
+import { Controller, Get, UseGuards, Post, Body } from '@nestjs/common';
+import { ApiTags } from '@nestjs/swagger';
 import { AuthService } from './auth.service';
-import { LocalAuthDto } from './dto/local-auth.dto';
-import { Tokens } from './types';
-// import { GetCurrentUserId } from 'src/common/decorators/get-current-user-id.decorator';
-// import { Request } from 'express';
-import { JwtService } from '@nestjs/jwt';
+import { AnyRoleGuard } from './role.guard';
+import { RefreshTokensDto } from './refresh-tokens.dto';
+import { Tokens } from './tokens.type';
 
-import { Request, request } from 'express';
-import { AuthGuard } from './auth.guard';
-import { RefreshTokensDto } from './dto/refresh-token.dto';
-
-@Controller('auth')
+@ApiTags('Auth')
+@Controller('/auth')
 export class AuthController {
-  constructor(
-    private readonly authService: AuthService,
-    private jwtService: JwtService,
-  ) {}
-
-  @Post('signup')
-  signupLocal(@Body() localAuthDto: LocalAuthDto): Promise<Tokens> {
-    return this.authService.signupLocal(localAuthDto);
+  constructor(private readonly authService: AuthService) {}
+  @ApiTags('Admin access', 'Customer access', 'Seller access')
+  @UseGuards(AnyRoleGuard)
+  @Get('whoami')
+  async whoami(): Promise<any> {
+    return await this.authService.whoami();
   }
 
-  @Post('signin')
-  signinLocal(@Body() localAuthDto: LocalAuthDto): Promise<Tokens> {
-    return this.authService.signinLocal(localAuthDto);
-  }
-
-  @UseGuards(AuthGuard)
-  @Post('logout')
-  logout(@Req() req: Request) {
-    return this.authService.logout(req);
-  }
-
-  @Post('refresh')
-  refreshTokens(@Body() rtDto: RefreshTokensDto): Promise<Tokens> {
-    return this.authService.refreshTokens(rtDto);
-  }
-
-  @UseGuards(AuthGuard)
-  @Get('profile')
-  getProfile(@Req() req: Request) {
-    return this.authService.getProfile(req);
+  @Post('/refresh-tokens')
+  async refreshTokens(@Body() dto: RefreshTokensDto): Promise<Tokens> {
+    return await this.authService.refreshTokens(dto);
   }
 }

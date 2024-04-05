@@ -1,4 +1,9 @@
+temp.js
+temp.ts
+temp.mjs
 node_modules
 dist
+uploaded_files
 # Keep environment variables out of version control
 .env
+
