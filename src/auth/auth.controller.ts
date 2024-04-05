@@ -10,7 +10,7 @@ import { RefreshTokensDto } from './refresh-tokens.dto';
 import { Tokens } from './tokens.type';
 
 @ApiTags('Auth')
-@Controller('/auth')
+@Controller('/auth') 
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
   @ApiTags('Admin access', 'Customer access', 'Seller access')
